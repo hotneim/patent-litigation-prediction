@@ -1,0 +1,41 @@
+old,new
+nber_subcategory_PV,NBER tech fields
+npl_cits_OECD,NPL citations
+num_bwd_cites_PV,Backward citations
+num_claims_PV,No of claims
+num_self_bwd_cites_PV,BWD self-citations
+originality_OECD,Originality
+patent_scope_OECD,Patent scope
+family_size_OECD,Family size
+foreign_prio_PV,Foreign priority
+pct_PV,PCT
+assignee_exp_PV,Assignee experience
+assignee_PV,Assignee
+lawyer_PV,Lawyer
+num_assignees_PV,Number of assignee
+share_foreign_PV,Share foreign
+share_fortune_OWN,Share fortune 500
+share_government_PV,Share government
+share_individual_PV,Share individual
+share_jp_PV,Share Japan
+avg_grant_rate_EX,Avg grant rate
+examiner_exp_EX,Examiner experience
+grant_lag_OECD,Grant lag
+small_entity_indicator_EX,Small entity
+pat_clm_ct_CLAIMS,No of indep claims
+pat_dep_clm_ct_CLAIMS,No of dep claims
+pat_dep_wrd_avg_CLAIMS,Avg word count dep claims
+pat_wrd_avg_CLAIMS,Avg word count indep claims
+share_process, Process claim share
+share_product, Product claim share
+share_productbyprocess, Product by process claim share
+share_means, Means share
+share_jepson, Jepson claim share
+new_word, New words
+new_bigram, New bigram
+new_trigram, New trigram
+new_word_comb, New word pair combination
+backward_cosine, Average cosine similarity
+
+
+
