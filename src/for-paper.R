@@ -1,17 +1,15 @@
 
 # --- RESULTS FOR PAPER --------------------------------------------------------
-# 
-# Code, based on the markdown file, for producing plots and tables for the 
-# paper.
-
+#  Code for producing plots and tables for the paper, based on the estimation
+#  results.
 # --- READ RESULTS -------------------------------------------------------------
+
 library(dplyr)
 library(tidyr)
 library(kableExtra)
 library(ggplot2)
 library(stringi)
 library(readxl)
-# library(firatheme)
 library(forcats)
 library(readr)
 library(lubridate)
