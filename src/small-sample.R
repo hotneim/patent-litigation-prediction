@@ -1,7 +1,7 @@
 
 # --- SMALL SAMPLE ANALYSIS-----------------------------------------------------
 # 
-# Code, based on the markdown file, for producing plots and tables for the 
+# Code, based on the markdown file, for producing plots and tables for the
 # paper.
 
 # For each model and for each sample size we do a number of experiments where we
@@ -22,11 +22,11 @@ library(vip)
 library(fuzzyjoin)
 library(patchwork)
 library(kableExtra)
-library(firatheme)
 library(glmnet)
 library(doParallel)
+library(here)
 
-source("evaluate.R")
+source(here("src", "evaluate.R"))
 
 all_cores <- parallel::detectCores(logical = TRUE) - 1
 cl <- makePSOCKcluster(all_cores)
@@ -35,23 +35,23 @@ registerDoParallel(cl)
 set.seed(1)
 
 # Load the data and pre-process-------------------------------------------------
-load("../rmd/objects/block1-2-3-4-5-data.Rdata")
+load(here("data", "block1-2-3-4-5-data.Rdata"))
 
 BLOCK <- 1:5
 GRID  <- 100
 
-variables <- 
-  readxl::read_excel("../../data/variables.xlsx") %>% 
-  filter(Blocks %in% BLOCK) %>% 
+variables <-
+  readxl::read_excel("../../data/variables.xlsx") %>%
+  filter(Blocks %in% BLOCK) %>%
   select(Variable, Blocks)
 
-litigation_df <- 
-  litigation_df %>% 
+litigation_df <-
+  litigation_df %>%
   drop_na(litigated_LIT, all_of(variables$Variable))
 
 # Make initial split as well as folds for cross validation
 
-# Initialize the results -------------------------------------------------------
+# Initialize the results -----------------------------------------------------
 small_sample_results <- tibble(model = character(),
                                sample_size = numeric(),
                                run = numeric(),
@@ -60,60 +60,56 @@ small_sample_results <- tibble(model = character(),
 
 for(i in sample_sizes) {
   for(j in 1:n_runs) {
-    
     # Make subsample and prepare the data
     subsample <- sample_n(litigation_df, i, replace = FALSE)
-    
     litigation_split <- initial_split(subsample, strata = litigated_LIT)
     litigation_train <- training(litigation_split)
-    litigation_test  <- testing (litigation_split)
-    
+    litigation_test  <- testing(litigation_split)
+
     litigation_folds <- vfold_cv(litigation_train, strata = litigated_LIT)
-    
+
     # Create recipe for training the models
     litigation_recipe <-
-      recipe(litigated_LIT ~ ., data = litigation_train) %>% 
+      recipe(litigated_LIT ~ ., data = litigation_train) %>%
       # Update roles of the ID and date variables
-      update_role(appln_id_OECD, new_role = "ID") %>% 
-      update_role(pub_nbr_OECD, new_role = "ID") %>% 
-      update_role(litigation_filing_date, new_role = "Date") %>% 
-      update_role(grant_date_PV, new_role = "Date") %>% 
-      step_normalize(all_numeric(), -appln_id_OECD) %>% 
-      step_zv(all_numeric()) %>% 
+      update_role(appln_id_OECD, new_role = "ID") %>%
+      update_role(pub_nbr_OECD, new_role = "ID") %>%
+      update_role(litigation_filing_date, new_role = "Date") %>%
+      update_role(grant_date_PV, new_role = "Date") %>%
+      step_normalize(all_numeric(), -appln_id_OECD) %>%
+      step_zv(all_numeric()) %>%
       # Lump together the factor variable
-      step_other(nber_subcategory_PV, threshold = 0.03) %>% 
+      step_other(nber_subcategory_PV, threshold = 0.03) %>%
       # One hot encoding of the categorical
-      step_dummy(all_nominal(), -all_outcomes(), -pub_nbr_OECD) 
-    
-    # --- LOGISTIC REGRESSION --------------------------------------------------
-    
+      step_dummy(all_nominal(), -all_outcomes(), -pub_nbr_OECD)
+
+    # --- LOGISTIC REGRESSION ------------------------------------------------
     cat(paste("Logistic regression, sample size", i, ", run", j, " ... "))
-    
-    lr_mod <- 
-      logistic_reg() %>% 
-      set_mode("classification") %>% 
+    lr_mod <-
+      logistic_reg() %>%
+      set_mode("classification") %>%
       set_engine("glm")
-    
+
     # Set up the workflows
-    litigation_workflow <- 
-      workflow() %>% 
-      add_model(lr_mod) %>% 
+    litigation_workflow <-
+      workflow() %>%
+      add_model(lr_mod) %>%
       add_recipe(litigation_recipe)
-    
-    lr_fit <- 
-      litigation_workflow %>% 
+
+    lr_fit <-
+      litigation_workflow %>%
       fit(data = litigation_train)
-    
+
     lr_result <- evaluate(fit = lr_fit,
                           training_data = litigation_train,
                           testing_data = litigation_test,
                           model = "lr")
-    
-    small_sample_results <- 
-      small_sample_results %>% 
-      bind_rows(tibble(model = "lr", 
-                       sample_size = i, 
-                       run = j, 
+
+    small_sample_results <-
+      small_sample_results %>%
+      bind_rows(tibble(model = "lr",
+                       sample_size = i,
+                       run = j 
                        n_positives = subsample %>% select(litigated_LIT) %>% pull %>% table %>% .["Litigated"],
                        auc = lr_result$auc %>% filter(where == "test") %>%  select(value) %>% pull))
     cat("FINISHED! \n")
@@ -318,22 +314,23 @@ for(i in sample_sizes) {
   }
 }
 
-save(small_sample_results, file = "../rmd/objects/revision_small_sample_results.Rdata")
+save(small_sample_results,
+     file = here("est-results","revision_small_sample_results.Rdata"))
 
-load("../rmd/objects/revision_small_sample_results.Rdata")
+load(here("est-results", "revision_small_sample_results.Rdata"))
 
-small_sample <- 
-  small_sample_results %>% 
-  filter(model %in% c("lr")) %>% 
-  mutate(model = recode(.$model, 
+small_sample <-
+  small_sample_results %>%
+  filter(model %in% c("lr")) %>%
+  mutate(model = recode(.$model,
                         lr = "Logistic regression",
-                        xgb = "xgBoost")) %>% 
-  group_by(model, sample_size) %>% 
+                        xgb = "xgBoost")) %>%
+  group_by(model, sample_size) %>%
   summarize(mean = mean(auc),
-            sd = sd(auc)) %>% 
+            sd = sd(auc)) %>%
   ggplot(aes(x = sample_size, y = mean, colour = model, fill = model)) +
   geom_line(position = position_dodge(width = 3000)) +
-  geom_crossbar(aes(ymin = mean - sd, ymax = mean + 2*sd), 
+  geom_crossbar(aes(ymin = mean - sd, ymax = mean + 2*sd),
                 position = position_dodge(width = 3000),
                 alpha = .5) +
   ylab("Average AUC") +
@@ -343,5 +340,3 @@ small_sample <-
   scale_fill_manual(values = c("black", "grey50")) +
   theme_minimal() +
   theme(legend.position = "none")
-
-

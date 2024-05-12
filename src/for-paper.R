@@ -489,7 +489,7 @@ ggsave(filename = here("for-paper", "revision_odds_ratio.pdf"),
 
 
 # CONFUSION MATRIX --------------
-results$roc %>% 
+results$roc %>%
   filter(model == "xgb", where == "test") %>%
   filter(sensitivity > .75) %>%
   arrange(sensitivity) %>%
