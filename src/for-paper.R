@@ -203,8 +203,8 @@ vi_logistic <-
   ylab("") +
   theme_minimal()
 
-ggsave(filename = here("for-paper", "revision_vi_logistic.pdf",
-                       plot = vi_logistic))
+ggsave(filename = here("for-paper", "revision_vi_logistic.pdf"),
+                       plot = vi_logistic)
 
 # --- PERMUTED VI PLOTS LOGISTIC REGRESSIOM BLOCK 1-2-3-4-5 ------------------
 variable_names <- read_csv(here("data", "variable_names.csv"))
