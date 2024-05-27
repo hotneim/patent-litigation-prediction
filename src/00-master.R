@@ -1,4 +1,3 @@
-
 # -- TIDYMODELS FOR LITIGATION PROJECT --------------------------------------- #
 # -- MASTER FILE                       --------------------------------------- #
 #
@@ -10,14 +9,14 @@
 library(here)
 
 # ---- SET PARAMETERS -------------------------------------------------------- #
-BLOCK <- 1:5              # Which blocks of variables to use
-YEARS <- 2002:2005        # Which years to consider
-CLEAN <- F                # Run the part where we build the cleaned-up data set?
-                          # (Not necessary to run unless starting from scratch,
-                          # because the cleaned up data file is available in
-                          # the repository.)
-NSIM  <- 15               # How many iterations for calculating the permuted VI
-GRID  <- 100              # Size of grid to tune the models
+BLOCK <- 1:5 # Which blocks of variables to use
+YEARS <- 2002:2005 # Which years to consider
+CLEAN <- F # Run the part where we build the cleaned-up data set?
+# (Not necessary to run unless starting from scratch,
+# because the cleaned up data file is available in
+# the repository.)
+NSIM <- 15 # How many iterations for calculating the permuted VI
+GRID <- 100 # Size of grid to tune the models
 
 # ---- LOAD PACKAGES AND GENERAL SOURCE FILES -------------------------------- #
 library(tidyverse)
@@ -41,13 +40,13 @@ here("src", "permute_vi.R") %>% source()
 # registerDoParallel(cl)
 
 # ---- SOURCE THE BLOCK-SPECIFIC SCRIPT -------------------------------------- #
-here("src", paste0("block", paste(BLOCK, collapse = "-"), ".R")) %>% source
+here("src", paste0("block", paste(BLOCK, collapse = "-"), ".R")) %>% source()
 
 # ---- FIT AND SAVE THE VARIOUS MODELS --------------------------------------- #
 
 {
- here("src", "estimate_lr.R")               %>% source
- here("src", "estimate_elastic.R")          %>% source
- here("src", "estimate_rf.R")               %>% source
- here("src", "estimate_xgb.R")              %>% source
+  here("src", "estimate_lr.R") %>% source()
+  here("src", "estimate_elastic.R") %>% source()
+  here("src", "estimate_rf.R") %>% source()
+  here("src", "estimate_xgb.R") %>% source()
 }

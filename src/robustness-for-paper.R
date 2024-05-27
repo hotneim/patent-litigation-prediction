@@ -42,7 +42,8 @@ for(i in seq_len(nrow(auc))) {
 auc <-
   auc %>%
   mutate(vi = vi) %>%
-  mutate(year = as.numeric(year) - 1)
+  mutate(year = as.numeric(year) - 1) %>% 
+  filter(year <= 2011)
 
 # Make plot of the AUC for xgb over time
 auc_plot <-
